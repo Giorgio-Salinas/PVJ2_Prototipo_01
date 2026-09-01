@@ -21,8 +21,22 @@ function Enemigo:Nuevo(x, y, vel)
     return o
 end
 
-function Enemigo:Actualizar(dt)
-    -- Logica de movimiento
+function Enemigo:Actualizar(dt, target)
+    if target then
+        -- Vector hacia el objetivo
+        local dx = target.x - self.x
+        local dy = target.y - self.y
+        local distancia = math.sqrt(dx * dx + dy * dy)
+
+        -- Si no esta superpuesto, se mueve en direccion al jugador
+        if distancia > 1 then
+            local dirX = dx / distancia
+            local dirY = dy / distancia
+
+            self.x = self.x + (dirX * self.velocidad * dt)
+            self.y = self.y + (dirY * self.velocidad * dt)
+        end
+    end
 end
 
 function Enemigo:Dibujar()

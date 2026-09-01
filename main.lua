@@ -16,13 +16,14 @@ function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
 
+    
     pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, 60)
     malo = Enemigo:Nuevo(20, 20, 35)
 end
 
 function love.update(dt)
     pj:Actualizar(dt, ventana)
-    malo:Actualizar(dt)
+    malo:Actualizar(dt, pj)
 end
 
 function love.draw()
