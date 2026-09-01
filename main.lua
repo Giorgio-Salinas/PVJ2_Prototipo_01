@@ -11,13 +11,12 @@ function redondear(n)
 end
 
 function love.load()
-    -- Ajustar la ventana de Windows exactamente al tamaño del canvas escalado
     love.window.setMode(ventana.ancho * ventana.escala, ventana.alto * ventana.escala)
-
     love.graphics.setDefaultFilter("nearest", "nearest")
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
 
-    pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, "IMG/Walk.png", 60)
+    -- Instanciar jugador
+    pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, 60)
 end
 
 function love.update(dt)
