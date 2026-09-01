@@ -1,4 +1,5 @@
 require "jugador"
+require "enemigo"
 
 ventana = {
     ancho  = 160,
@@ -15,18 +16,20 @@ function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
 
-    -- Instanciar jugador
     pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, 60)
+    malo = Enemigo:Nuevo(20, 20, 35)
 end
 
 function love.update(dt)
     pj:Actualizar(dt, ventana)
+    malo:Actualizar(dt)
 end
 
 function love.draw()
     love.graphics.setCanvas(lienzo)
         love.graphics.clear(0.12, 0.12, 0.18)
         pj:Dibujar()
+        malo:Dibujar()
     love.graphics.setCanvas()
 
     love.graphics.draw(lienzo, 0, 0, 0, ventana.escala, ventana.escala)
