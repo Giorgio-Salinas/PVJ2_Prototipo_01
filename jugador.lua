@@ -9,7 +9,10 @@ function Jugador:Nuevo(x, y, vel)
 
     o.x = x
     o.y = y
+    o.inicioX = x
+    o.inicioY = y
     o.velocidad = vel or 60
+    o.vidas = 3
 
     o.ancho = 16
     o.alto = 16
@@ -64,6 +67,18 @@ function Jugador:Actualizar(dt, limites)
     else
         self.animacionActual.indice = 1
     end
+end
+
+function Jugador:RecibirDanio()
+    self.vidas = self.vidas - 1
+end
+
+function Jugador:Reiniciar()
+    self.x = self.inicioX
+    self.y = self.inicioY
+    self.animacionActual = self.animaciones.abajo
+    self.animacionActual.activado = false
+    self.animacionActual.indice = 1
 end
 
 function Jugador:Dibujar()

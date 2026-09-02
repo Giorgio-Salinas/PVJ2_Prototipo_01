@@ -9,6 +9,8 @@ function Enemigo:Nuevo(x, y, vel)
 
     o.x = x
     o.y = y
+    o.inicioX = x
+    o.inicioY = y
     o.velocidad = vel or 35
 
     o.ancho = 16
@@ -27,6 +29,14 @@ function Enemigo:Nuevo(x, y, vel)
     o.animacionActual = o.animaciones.abajo
 
     return o
+end
+
+function Enemigo:Reiniciar()
+    self.x = self.inicioX
+    self.y = self.inicioY
+    self.animacionActual = self.animaciones.abajo
+    self.animacionActual.activado = false
+    self.animacionActual.indice = 1
 end
 
 function Enemigo:Actualizar(dt, target)
