@@ -3,6 +3,7 @@ require "enemigo"
 
 local huboColision = false
 local tiempoPausa = 0
+local derrota = false
 
 ventana = {
     ancho  = 160,
@@ -46,6 +47,10 @@ function love.load()
 end
 
 function love.update(dt)
+    if derrota then
+        return
+    end
+
     if not huboColision then
         pj:Actualizar(dt, ventana)
         malo:Actualizar(dt, pj)
@@ -55,6 +60,11 @@ function love.update(dt)
             huboColision = true
             tiempoPausa = 0.5
             pj:RecibirDanio()
+
+            if pj.vidas <= 0 then
+                derrota = true
+            end
+
         end
     else
         -- Cuenta regresiva mientras dura el impacto
@@ -78,16 +88,22 @@ function love.draw()
         else
             love.graphics.setColor(1, 1, 1)
         end
-
+        
         pj:Dibujar()
         malo:Dibujar()
 
-        love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.setCanvas()
 
     
     love.graphics.draw(lienzo, 0, 0, 0, ventana.escala, ventana.escala)
 
     
-    love.graphics.print("Vidas: " .. pj.vidas, 10, 10)
+    -- 2. Interfaz de vida y derrota 
+    if derrota then
+        love.graphics.setColor(1, 0.2, 0.2)
+        love.graphics.print("GAME OVER / DERROTA", 10, 10)
+    else
+        love.graphics.print("Vidas: " .. pj.vidas, 10, 10)
+    end
 end
