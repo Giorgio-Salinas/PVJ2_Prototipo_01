@@ -46,12 +46,14 @@ end
 
 
 function love.load()
+    math.randomseed(os.time())
     love.window.setMode(ventana.ancho * ventana.escala, ventana.alto * ventana.escala)
     love.graphics.setDefaultFilter("nearest", "nearest")
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
 
     pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, 60)
     malo = Enemigo:Nuevo(20, 20, 25)
+    malo:PosicionarAleatorio(ventana)
 
    -- Animaciones de ataque direccionales (columnas 0 a 3 en vertical)
     ataques = {
@@ -96,7 +98,7 @@ function love.update(dt)
             if ataque and ataque.activado then
                 -- ATAQUE EXITOSO: Derrotamos al enemigo
                 derrotados = derrotados + 1
-                malo:Reiniciar()
+                malo:Reiniciar(ventana)
 
                 if derrotados >= objetivo then
                     victoria = true
@@ -119,7 +121,7 @@ function love.update(dt)
         if tiempoPausa <= 0 then
             huboColision = false
             pj:Reiniciar()
-            malo:Reiniciar()
+            malo:Reiniciar(ventana)
         end
     end
 end

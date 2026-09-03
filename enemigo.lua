@@ -32,9 +32,35 @@ function Enemigo:Nuevo(x, y, vel)
     return o
 end
 
-function Enemigo:Reiniciar()
-    self.x = self.inicioX
-    self.y = self.inicioY
+function Enemigo:PosicionarAleatorio(limites)
+    local esquina = math.random(1, 4)
+
+    if esquina == 1 then
+        -- Esquina superior izquierda
+        self.x = self.origen_x
+        self.y = self.origen_y
+    elseif esquina == 2 then
+        -- Esquina superior derecha
+        self.x = limites.ancho - self.origen_x
+        self.y = self.origen_y
+    elseif esquina == 3 then
+        -- Esquina inferior izquierda
+        self.x = self.origen_x
+        self.y = limites.alto - self.origen_y
+    elseif esquina == 4 then
+        -- Esquina inferior derecha
+        self.x = limites.ancho - self.origen_x
+        self.y = limites.alto - self.origen_y
+    end
+end
+
+function Enemigo:Reiniciar(limites)
+    if limites then
+        self:PosicionarAleatorio(limites)
+    else
+        self.x = self.inicioX
+        self.y = self.inicioY
+    end
     self.animacionActual = self.animaciones.abajo
     self.animacionActual.activado = false
     self.animacionActual.indice = 1
