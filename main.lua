@@ -12,6 +12,10 @@ local victoria = false
 local derrotados = 0
 local objetivo = 5
 
+-- contenedor de audios
+local sonidos = {}
+
+
 ventana = {
     ancho  = 160,
     alto   = 144,
@@ -51,6 +55,17 @@ function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
 
+    -- Carga de audio (stream para musica larga, static para SFX cortos)
+    sonidos.ToroYPampa = love.audio.newSource("SFX/ToroYPampa.mp3","stream")
+    sonidos.ToroYPampa:setLooping(true)
+    sonidos.ToroYPampa:setVolume(0.4)
+    sonidos.ToroYPampa:play()
+
+    sonidos.Golpe = love.audio.newSource("SFX/SFX_Golpe.mp3", "static")
+    sonidos.Danio = love.audio.newSource("SFX/SFX_Danio.mp3", "static")
+    sonidos.Ganar = love.audio.newSource("SFX/SFX_Ganar.mp3", "static")
+    sonidos.GameOver = love.audio.newSource("SFX/SFX_GameOver.mp3", "static")
+
     pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, 60)
     malo = Enemigo:Nuevo(20, 20, 25)
     malo:PosicionarAleatorio(ventana)
@@ -75,6 +90,8 @@ function love.keypressed(key)
         ataque.activado = true
         ataque.indice = 1
         
+        -- Reproducir sonido de ataque (clonado para permitir spam sin cortarse)
+        sonidos.Golpe:clone():play()
     end
 end
 
@@ -102,15 +119,20 @@ function love.update(dt)
 
                 if derrotados >= objetivo then
                     victoria = true
+                    sonidos.ToroYPampa:stop()
+                    sonidos.Ganar:play()
                 end
             else
                 -- DAÑO AL JUGADOR: Se pausa, se tiñe de rojo y resta vida
                 huboColision = true
                 tiempoPausa = 0.5
                 pj:RecibirDanio()
+                sonidos.Danio:clone():play()
 
                 if pj.vidas <= 0 then
                     derrota = true
+                    sonidos.ToroYPampa:stop()
+                    sonidos.GameOver:play()
                 end
             end
         end
