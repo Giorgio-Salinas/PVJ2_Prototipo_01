@@ -5,6 +5,13 @@ local huboColision = false
 local tiempoPausa = 0
 local derrota = false
 
+local Animacion = require "animacion"
+
+local ataque = nil
+local victoria = false
+local derrotados = 0
+local objetivo = 5
+
 ventana = {
     ancho  = 160,
     alto   = 144,
@@ -18,15 +25,18 @@ end
 -- Deteccion de colision por cajas (AABB)
 
 function verificarColision(a, b)
-    local a_izq = a.x - a.origen_x
-    local a_der = a.x + a.origen_x
-    local a_arr = a.y - a.origen_y
-    local a_aba = a.y + a.origen_y
+    local ra = a.radio_colision or a.origen_x
+    local rb = b.radio_colision or b.origen_x
 
-    local b_izq = b.x - b.origen_x
-    local b_der = b.x + b.origen_x
-    local b_arr = b.y - b.origen_y
-    local b_aba = b.y + b.origen_y
+    local a_izq = a.x - ra
+    local a_der = a.x + ra
+    local a_arr = a.y - ra
+    local a_aba = a.y + ra
+
+    local b_izq = b.x - rb
+    local b_der = b.x + rb
+    local b_arr = b.y - rb
+    local b_aba = b.y + rb
 
     return a_der > b_izq and
            a_izq < b_der and
@@ -34,38 +44,75 @@ function verificarColision(a, b)
            a_arr < b_aba
 end
 
-local huboColision = false
 
 function love.load()
     love.window.setMode(ventana.ancho * ventana.escala, ventana.alto * ventana.escala)
     love.graphics.setDefaultFilter("nearest", "nearest")
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
 
-    
     pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, 60)
-    malo = Enemigo:Nuevo(20, 20, 35)
+    malo = Enemigo:Nuevo(20, 20, 25)
+
+   -- Animaciones de ataque direccionales (columnas 0 a 3 en vertical)
+    ataques = {
+        abajo     = Animacion.crear("img/Hammer.png", 3, 64, 64, 12, true, 0, false),
+        arriba    = Animacion.crear("img/Hammer.png", 3, 64, 64, 12, true, 1, false),
+        izquierda = Animacion.crear("img/Hammer.png", 3, 64, 64, 12, true, 2, false),
+        derecha   = Animacion.crear("img/Hammer.png", 3, 64, 64, 12, true, 3, false)
+    }
+
+    ataque = ataques.abajo
+    ataque.activado = false
+end
+
+function love.keypressed(key)
+    if key == "space" and not ataque.activado and not derrota and not victoria and not huboColision then
+        
+        -- Seleccionar la animación según hacia dónde mira el jugador
+        ataque = ataques[pj.direccion_actual] or ataques.abajo
+        ataque.activado = true
+        ataque.indice = 1
+        
+    end
 end
 
 function love.update(dt)
-    if derrota then
+    if derrota or victoria then
         return
+    end
+
+    -- Actualizar animación de ataque
+    if ataque and ataque.activado then
+        Animacion.actualizar(ataque, dt)
     end
 
     if not huboColision then
         pj:Actualizar(dt, ventana)
         malo:Actualizar(dt, pj)
 
-        -- Al colisionar: activa pausa, descuenta vida y arranca temporizador
+        
+
         if verificarColision(pj, malo) then
-            huboColision = true
-            tiempoPausa = 0.5
-            pj:RecibirDanio()
+            if ataque and ataque.activado then
+                -- ATAQUE EXITOSO: Derrotamos al enemigo
+                derrotados = derrotados + 1
+                malo:Reiniciar()
 
-            if pj.vidas <= 0 then
-                derrota = true
+                if derrotados >= objetivo then
+                    victoria = true
+                end
+            else
+                -- DAÑO AL JUGADOR: Se pausa, se tiñe de rojo y resta vida
+                huboColision = true
+                tiempoPausa = 0.5
+                pj:RecibirDanio()
+
+                if pj.vidas <= 0 then
+                    derrota = true
+                end
             end
-
         end
+    
     else
         -- Cuenta regresiva mientras dura el impacto
         tiempoPausa = tiempoPausa - dt
@@ -76,6 +123,7 @@ function love.update(dt)
         end
     end
 end
+
 
 
 function love.draw()
@@ -92,6 +140,12 @@ function love.draw()
         pj:Dibujar()
         malo:Dibujar()
 
+        -- DIBUJAR EL ATAQUE
+        if ataque and ataque.activado then
+            love.graphics.setColor(1, 1, 1)
+            Animacion.dibujar(ataque, pj.x, pj.y, 32, 32)
+        end
+
     love.graphics.setColor(1, 1, 1)
     love.graphics.setCanvas()
 
@@ -99,11 +153,16 @@ function love.draw()
     love.graphics.draw(lienzo, 0, 0, 0, ventana.escala, ventana.escala)
 
     
-    -- 2. Interfaz de vida y derrota 
-    if derrota then
+    -- Interfaz de vida y derrota y objetivo
+   if derrota then
         love.graphics.setColor(1, 0.2, 0.2)
         love.graphics.print("GAME OVER / DERROTA", 10, 10)
+    elseif victoria then
+        love.graphics.setColor(0.2, 1, 0.2)
+        love.graphics.print("VICTORIA!", 10, 10)
     else
+        love.graphics.setColor(1, 1, 1)
         love.graphics.print("Vidas: " .. pj.vidas, 10, 10)
+        love.graphics.print("Objetivo: " .. derrotados .. "/" .. objetivo, (ventana.ancho * ventana.escala) - 150, 10)
     end
 end

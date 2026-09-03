@@ -17,6 +17,7 @@ function Enemigo:Nuevo(x, y, vel)
     o.alto = 16
     o.origen_x = o.ancho / 2
     o.origen_y = o.alto / 2
+    o.radio_colision = 5
 
     -- Animaciones verticales por columna
     o.animaciones = {

@@ -18,6 +18,9 @@ function Jugador:Nuevo(x, y, vel)
     o.alto = 16
     o.origen_x = o.ancho / 2
     o.origen_y = o.alto / 2
+    o.radio_colision = 5
+
+    o.direccion_actual = "abajo"
 
     -- Animaciones verticales por cada columna del spritesheet Walk.png
     o.animaciones = {
@@ -39,18 +42,22 @@ function Jugador:Actualizar(dt, limites)
     if love.keyboard.isDown("right") or love.keyboard.isDown("d") then
         self.x = self.x + (self.velocidad * dt)
         self.animacionActual = self.animaciones.derecha
+        self.direccion_actual = "derecha"
         seMueve = true
     elseif love.keyboard.isDown("left") or love.keyboard.isDown("a") then
         self.x = self.x - (self.velocidad * dt)
         self.animacionActual = self.animaciones.izquierda
+        self.direccion_actual = "izquierda"
         seMueve = true
     elseif love.keyboard.isDown("down") or love.keyboard.isDown("s") then
         self.y = self.y + (self.velocidad * dt)
         self.animacionActual = self.animaciones.abajo
+        self.direccion_actual = "abajo"
         seMueve = true
     elseif love.keyboard.isDown("up") or love.keyboard.isDown("w") then
         self.y = self.y - (self.velocidad * dt)
         self.animacionActual = self.animaciones.arriba
+        self.direccion_actual = "arriba"
         seMueve = true
     end
 
@@ -76,6 +83,7 @@ end
 function Jugador:Reiniciar()
     self.x = self.inicioX
     self.y = self.inicioY
+    self.direccion_actual = "abajo"
     self.animacionActual = self.animaciones.abajo
     self.animacionActual.activado = false
     self.animacionActual.indice = 1

@@ -2,7 +2,8 @@
 local Animacion = {}
 
 -- offset define qué columna (X) o fila (Y) recortar
-function Animacion.crear(rutaImg, limiteFrames, anchoQuad, altoQuad, velocidad, esVertical, offset)
+-- enBucle define si se repite infinitamente (true) o se ejecuta una sola vez (false)
+function Animacion.crear(rutaImg, limiteFrames, anchoQuad, altoQuad, velocidad, esVertical, offset, enBucle)
     local anim = {}
     anim.spriteSheet = love.graphics.newImage(rutaImg)
     anim.limiteFrames = limiteFrames
@@ -12,14 +13,27 @@ function Animacion.crear(rutaImg, limiteFrames, anchoQuad, altoQuad, velocidad, 
     anim.esVertical = esVertical or false
     anim.indice = 1
     anim.activado = true
+    
+    if enBucle == nil then
+        anim.enBucle = true
+     else
+        anim.enBucle = enBucle
+    end
 
-    local despX = (anim.esVertical and (offset or 0) * anim.ancho) or 0
-    local despY = (not anim.esVertical and (offset or 0) * anim.alto) or 0
-
+    local filaOColumna = offset or 0
     anim.quads = {}
+
     for i = 0, limiteFrames do
-        local x = anim.esVertical and despX or (i * anim.ancho)
-        local y = anim.esVertical and (i * anim.alto) or despY
+        local x, y
+        if anim.esVertical then
+            -- Se mueve verticalmente en una columna fija
+            x = filaOColumna * anim.ancho
+            y = i * anim.alto
+        else
+            -- Se mueve horizontalmente en una fila fija
+            x = i * anim.ancho
+            y = filaOColumna * anim.alto
+        end
 
         local quad = love.graphics.newQuad(
             x, y,
@@ -35,8 +49,15 @@ end
 function Animacion.actualizar(anim, dt)
     if anim.activado then
         anim.indice = anim.indice + (anim.velocidad * dt)
+        
         if anim.indice > anim.limiteFrames + 1 then
-            anim.indice = 1
+            if anim.enBucle then
+                anim.indice = 1
+            else
+                -- Si no tiene bucle, se apaga la animación y se resetea el índice
+                anim.indice = 1
+                anim.activado = false
+            end
         end
     end
 end
