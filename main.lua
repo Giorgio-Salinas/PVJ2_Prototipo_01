@@ -48,6 +48,29 @@ function verificarColision(a, b)
            a_arr < b_aba
 end
 
+function reiniciarJuego()
+    derrota = false
+    victoria = false
+    huboColision = false
+    tiempoPausa = 0
+    derrotados = 0
+
+    pj:Reiniciar()
+    pj.vidas = 3 
+
+    malo:Reiniciar(ventana)
+
+    if ataque then
+        ataque.activado = false
+        ataque.indice = 1
+    end
+
+    -- Reiniciar musica
+    if sonidos.ToroYPampa then
+        sonidos.ToroYPampa:stop()
+        sonidos.ToroYPampa:play()
+    end
+end
 
 function love.load()
     math.randomseed(os.time())
@@ -83,8 +106,18 @@ function love.load()
 end
 
 function love.keypressed(key)
+    -- Reiniciar partida al ganar o perder
+    if (derrota or victoria) and key == "r" then
+        reiniciarJuego()
+        return
+    end
+
+    if (derrota or victoria) and key == "escape" then
+        love.event.quit()
+        return
+    end
+    
     if key == "space" and not ataque.activado and not derrota and not victoria and not huboColision then
-        
         -- Seleccionar la animación según hacia dónde mira el jugador
         ataque = ataques[pj.direccion_actual] or ataques.abajo
         ataque.activado = true
@@ -152,9 +185,8 @@ end
 
 function love.draw()
     love.graphics.setCanvas(lienzo)
-        love.graphics.clear(0.12, 0.12, 0.18)
-
-        -- Tinte de impacto en los personajes
+    love.graphics.clear(0.12, 0.12, 0.18)
+         -- Tinte de impacto en los personajes
         if huboColision then
             love.graphics.setColor(1, 0.3, 0.3)
         else
@@ -162,7 +194,10 @@ function love.draw()
         end
         
         pj:Dibujar()
+
+        if not victoria and not derrota then
         malo:Dibujar()
+    end
 
         -- DIBUJAR EL ATAQUE
         if ataque and ataque.activado then
@@ -181,9 +216,13 @@ function love.draw()
    if derrota then
         love.graphics.setColor(1, 0.2, 0.2)
         love.graphics.print("GAME OVER / DERROTA", 10, 10)
+        love.graphics.print("Presiona 'R' para reiniciar", 10, 30)
+        love.graphics.print("Presiona 'Esc' para salir", 10, 50)
     elseif victoria then
         love.graphics.setColor(0.2, 1, 0.2)
         love.graphics.print("VICTORIA!", 10, 10)
+        love.graphics.print("Presiona 'R' para jugar de nuevo", 10, 30)
+        love.graphics.print("Presiona 'Esc' para salir", 10, 50)
     else
         love.graphics.setColor(1, 1, 1)
         love.graphics.print("Vidas: " .. pj.vidas, 10, 10)
