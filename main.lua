@@ -90,7 +90,7 @@ function love.load()
     sonidos.GameOver = love.audio.newSource("SFX/SFX_GameOver.mp3", "static")
 
     pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60)
-    malo = Enemigo:Nuevo(20, 20, 25)
+    malo = Enemigo(20, 20, 25)
     malo:PosicionarAleatorio(ventana)
 
    -- Animaciones de ataque direccionales (columnas 0 a 3 en vertical)
