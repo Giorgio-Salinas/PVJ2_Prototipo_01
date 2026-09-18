@@ -1,38 +1,36 @@
-local Animacion = require "animacion"
-
 -- ================= CLASE JUGADOR =================
-Jugador = {}
-Jugador.__index = Jugador
 
-function Jugador:Nuevo(x, y, vel)
+Jugador = Class{}
+
+function Jugador:init(x, y, vel)
     local o = setmetatable({}, Jugador)
 
-    o.x = x
-    o.y = y
-    o.inicioX = x
-    o.inicioY = y
-    o.velocidad = vel or 60
-    o.vidas = 3
+    self.x = x
+    self.y = y
+    self.inicioX = x
+    self.inicioY = y
+    self.velocidad = vel or 60
+    self.vidas = 3
 
-    o.ancho = 16
-    o.alto = 16
-    o.origen_x = o.ancho / 2
-    o.origen_y = o.alto / 2
-    o.radio_colision = 5
+    self.ancho = 16
+    self.alto = 16
+    self.origen_x = self.ancho / 2
+    self.origen_y = self.alto / 2
+    self.radio_colision = 5
 
-    o.direccion_actual = "abajo"
+    self.direccion_actual = "abajo"
 
     -- Animaciones verticales por cada columna del spritesheet Walk.png
-    o.animaciones = {
-        abajo     = Animacion.crear("img/Walk.png", 3, o.ancho, o.alto, 8, true, 0),
-        arriba = Animacion.crear("img/Walk.png", 3, o.ancho, o.alto, 8, true, 1),
-        izquierda    = Animacion.crear("img/Walk.png", 3, o.ancho, o.alto, 8, true, 2),
-        derecha   = Animacion.crear("img/Walk.png", 3, o.ancho, o.alto, 8, true, 3)
+    self.animaciones = {
+        abajo     = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 0),
+        arriba = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 1),
+        izquierda    = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 2),
+        derecha   = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 3)
     }
 
-    o.animacionActual = o.animaciones.abajo
+    self.animacionActual = self.animaciones.abajo
 
-    return o
+    
 end
 
 function Jugador:Actualizar(dt, limites)
@@ -92,5 +90,3 @@ end
 function Jugador:Dibujar()
     Animacion.dibujar(self.animacionActual, self.x, self.y, self.origen_x, self.origen_y)
 end
-
-return Jugador

@@ -1,11 +1,11 @@
-require "jugador"
-require "enemigo"
+require("dependencias")
+
 
 local huboColision = false
 local tiempoPausa = 0
 local derrota = false
 
-local Animacion = require "animacion"
+
 
 local ataque = nil
 local victoria = false
@@ -89,7 +89,7 @@ function love.load()
     sonidos.Ganar = love.audio.newSource("SFX/SFX_Ganar.mp3", "static")
     sonidos.GameOver = love.audio.newSource("SFX/SFX_GameOver.mp3", "static")
 
-    pj = Jugador:Nuevo(ventana.ancho / 2, ventana.alto / 2, 60)
+    pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60)
     malo = Enemigo:Nuevo(20, 20, 25)
     malo:PosicionarAleatorio(ventana)
 
