@@ -57,8 +57,8 @@ function reiniciarJuego()
 
     pj:Reiniciar()
     pj.vidas = 3 
-
-    malo:Reiniciar(ventana)
+    enemigo1:Reiniciar(ventana)
+    enemigo2:Reiniciar(ventana)
 
     if ataque then
         ataque.activado = false
@@ -90,8 +90,15 @@ function love.load()
     sonidos.GameOver = love.audio.newSource("SFX/SFX_GameOver.mp3", "static")
 
     pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60)
-    malo = Enemigo(20, 20, 25)
-    malo:PosicionarAleatorio(ventana)
+    enemigo1 = Enemigo(20, 20, "img/Robot_Walk.png", 4, 25)
+    enemigo2 = Enemigo(140, 20, "img/Beast2.png", 4, 15)
+    enemigo1:PosicionarAleatorio(ventana)
+    enemigo2:PosicionarAleatorio(ventana)
+
+    -- Si cayeron en la misma coordenada, volvemos a posicionar al segundo
+    while enemigo1.x == enemigo2.x and enemigo1.y == enemigo2.y do
+        enemigo2:PosicionarAleatorio(ventana)
+    end
 
    -- Animaciones de ataque direccionales (columnas 0 a 3 en vertical)
     ataques = {
@@ -140,15 +147,21 @@ function love.update(dt)
 
     if not huboColision then
         pj:Actualizar(dt, ventana)
-        malo:Actualizar(dt, pj)
+        enemigo1:Actualizar(dt, pj)
+        enemigo2:Actualizar(dt, pj)
 
-        
+        local colisionCon = nil
+        if verificarColision(pj, enemigo1) then
+            colisionCon = enemigo1
+        elseif verificarColision(pj, enemigo2) then
+            colisionCon = enemigo2
+        end
 
-        if verificarColision(pj, malo) then
+        if colisionCon then
             if ataque and ataque.activado then
                 -- ATAQUE EXITOSO: Derrotamos al enemigo
                 derrotados = derrotados + 1
-                malo:Reiniciar(ventana)
+                colisionCon:Reiniciar(ventana)
 
                 if derrotados >= objetivo then
                     victoria = true
@@ -176,7 +189,8 @@ function love.update(dt)
         if tiempoPausa <= 0 then
             huboColision = false
             pj:Reiniciar()
-            malo:Reiniciar(ventana)
+            enemigo1:Reiniciar(ventana)
+            enemigo2:Reiniciar(ventana)
         end
     end
 end
@@ -196,7 +210,8 @@ function love.draw()
         pj:Dibujar()
 
         if not victoria and not derrota then
-        malo:Dibujar()
+        enemigo1:Dibujar()
+        enemigo2:Dibujar()
     end
 
         -- DIBUJAR EL ATAQUE
