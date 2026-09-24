@@ -12,6 +12,11 @@ local victoria = false
 local derrotados = 0
 local objetivo = 5
 
+-- control de spawner dinamico
+local timerSpawn = 0
+local tiempoEntreSpawns = 3.5 -- aparece uno enemigo cada 3.5 segundos
+local maxEnemigos = 4
+
 -- contenedor de audios
 local sonidos = {}
 
@@ -56,6 +61,7 @@ function reiniciarJuego()
     derrotados = 0
 
     pj:Reiniciar()
+    timerSpawn = 0
     pj.vidas = 3 
     -- Reinicia a todos los enemigos de la lista
     for _, enemigo in ipairs(enemigos) do
@@ -72,6 +78,23 @@ function reiniciarJuego()
         sonidos.ToroYPampa:stop()
         sonidos.ToroYPampa:play()
     end
+end
+
+function invocarEnemigo()
+    if #enemigos >= maxEnemigos then
+        return
+    end
+
+    local nuevo = nil
+    -- 50% de probabilidad de ser Robot o Bestia
+    if math.random() < 0.5 then
+        nuevo = Robot(20, 20)
+    else
+        nuevo = Bestia(20, 20)
+    end
+
+    nuevo:PosicionarAleatorio(ventana)
+    table.insert(enemigos, nuevo)
 end
 
 function love.load()
@@ -151,6 +174,12 @@ function love.update(dt)
     end
 
     if not huboColision then
+        -- Temporizador para invocar nuevos enemigos
+        timerSpawn = timerSpawn + dt
+        if timerSpawn >= tiempoEntreSpawns then
+            timerSpawn = 0
+            invocarEnemigo()
+        end
         pj:Actualizar(dt, ventana)
 
         local colisionCon = nil
@@ -167,6 +196,8 @@ function love.update(dt)
                 -- ATAQUE EXITOSO: Derrotamos al enemigo
                 derrotados = derrotados + 1
                 colisionCon:Reiniciar(ventana)
+                ataque.activado = false
+                ataque.indice = 1
 
                 if derrotados >= objetivo then
                     victoria = true

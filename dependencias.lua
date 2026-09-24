@@ -10,7 +10,7 @@ Animacion = require("animacion")
 -- Entidades y clases
 
 require("jugador")
-require("enemigo")
-require("robot")
-require("bestia")
+require("enemigos/enemigo")
+require("enemigos/robot")
+require("enemigos/bestia")
 
