@@ -57,8 +57,10 @@ function reiniciarJuego()
 
     pj:Reiniciar()
     pj.vidas = 3 
-    enemigo1:Reiniciar(ventana)
-    enemigo2:Reiniciar(ventana)
+    -- Reinicia a todos los enemigos de la lista
+    for _, enemigo in ipairs(enemigos) do
+        enemigo:Reiniciar(ventana)
+    end
 
     if ataque then
         ataque.activado = false
@@ -90,14 +92,17 @@ function love.load()
     sonidos.GameOver = love.audio.newSource("SFX/SFX_GameOver.mp3", "static")
 
     pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60)
-    enemigo1 = Enemigo(20, 20, "img/Robot_Walk.png", 4, 25)
-    enemigo2 = Enemigo(140, 20, "img/Beast2.png", 4, 15)
-    enemigo1:PosicionarAleatorio(ventana)
-    enemigo2:PosicionarAleatorio(ventana)
+    
+    --Lista dinamica de enmigos, clases hijas
+    enemigos = {Robot(20,20), Bestia(20,20)}
+
+    for _, enemigo in ipairs(enemigos) do
+        enemigo:PosicionarAleatorio(ventana)
+    end
 
     -- Si cayeron en la misma coordenada, volvemos a posicionar al segundo
-    while enemigo1.x == enemigo2.x and enemigo1.y == enemigo2.y do
-        enemigo2:PosicionarAleatorio(ventana)
+    while enemigos[1].x == enemigos[2].x and enemigos[1].y == enemigos[2].y do
+        enemigos[2]:PosicionarAleatorio(ventana)
     end
 
    -- Animaciones de ataque direccionales (columnas 0 a 3 en vertical)
@@ -147,14 +152,14 @@ function love.update(dt)
 
     if not huboColision then
         pj:Actualizar(dt, ventana)
-        enemigo1:Actualizar(dt, pj)
-        enemigo2:Actualizar(dt, pj)
 
         local colisionCon = nil
-        if verificarColision(pj, enemigo1) then
-            colisionCon = enemigo1
-        elseif verificarColision(pj, enemigo2) then
-            colisionCon = enemigo2
+       -- Actualiza todos los enemigos y verifica colisión con el jugador
+        for _, enemigo in ipairs(enemigos) do
+            enemigo:Actualizar(dt, pj)
+            if verificarColision(pj, enemigo) then
+                colisionCon = enemigo
+            end
         end
 
         if colisionCon then
@@ -189,8 +194,10 @@ function love.update(dt)
         if tiempoPausa <= 0 then
             huboColision = false
             pj:Reiniciar()
-            enemigo1:Reiniciar(ventana)
-            enemigo2:Reiniciar(ventana)
+            -- Reiniciamos a todos los enemigos de la lista
+            for _, enemigo in ipairs(enemigos) do
+                enemigo:Reiniciar(ventana)
+            end
         end
     end
 end
@@ -210,9 +217,10 @@ function love.draw()
         pj:Dibujar()
 
         if not victoria and not derrota then
-        enemigo1:Dibujar()
-        enemigo2:Dibujar()
-    end
+            for _, enemigo in ipairs(enemigos) do
+                enemigo:Dibujar()
+            end
+        end
 
         -- DIBUJAR EL ATAQUE
         if ataque and ataque.activado then

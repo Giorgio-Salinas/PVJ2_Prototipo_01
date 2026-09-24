@@ -9,10 +9,7 @@ function Enemigo:init(x, y, ruta_img, total_frames, vel)
     self.y = y
     self.inicioX = x
     self.inicioY = y
-    self.velocidad = vel or 35
-
-    local ruta = ruta_img or "img/Robot_Walk.png"
-    local frames = total_frames or 4
+    self.velocidad = vel
 
     self.ancho = 16
     self.alto = 16
@@ -22,10 +19,10 @@ function Enemigo:init(x, y, ruta_img, total_frames, vel)
 
     -- Animaciones verticales por columna
     self.animaciones = {
-        abajo     = Animacion.crear(ruta, frames, self.ancho, self.alto, 6, true, 0),
-        arriba    = Animacion.crear(ruta, frames, self.ancho, self.alto, 6, true, 1),
-        izquierda = Animacion.crear(ruta, frames, self.ancho, self.alto, 6, true, 2),
-        derecha   = Animacion.crear(ruta, frames, self.ancho, self.alto, 6, true, 3)
+        abajo     = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 0),
+        arriba    = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 1),
+        izquierda = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 2),
+        derecha   = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 3)
     }
 
     self.animacionActual = self.animaciones.abajo

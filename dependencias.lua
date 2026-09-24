@@ -11,4 +11,6 @@ Animacion = require("animacion")
 
 require("jugador")
 require("enemigo")
+require("robot")
+require("bestia")
 
