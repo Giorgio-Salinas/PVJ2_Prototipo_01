@@ -1,35 +1,32 @@
-local Animacion = require "animacion"
-
 -- Clase Enemigo
-Enemigo = {}
-Enemigo.__index = Enemigo
 
-function Enemigo:Nuevo(x, y, vel)
-    local o = setmetatable({}, Enemigo)
+Enemigo = Class{}
 
-    o.x = x
-    o.y = y
-    o.inicioX = x
-    o.inicioY = y
-    o.velocidad = vel or 35
+function Enemigo:init(x, y, ruta_img, total_frames, vel)
+    
 
-    o.ancho = 16
-    o.alto = 16
-    o.origen_x = o.ancho / 2
-    o.origen_y = o.alto / 2
-    o.radio_colision = 5
+    self.x = x
+    self.y = y
+    self.inicioX = x
+    self.inicioY = y
+    self.velocidad = vel
+
+    self.ancho = 16
+    self.alto = 16
+    self.origen_x = self.ancho / 2
+    self.origen_y = self.alto / 2
+    self.radio_colision = 5
 
     -- Animaciones verticales por columna
-    o.animaciones = {
-        abajo     = Animacion.crear("img/Robot_Walk.png", 3, o.ancho, o.alto, 6, true, 0),
-        arriba    = Animacion.crear("img/Robot_Walk.png", 3, o.ancho, o.alto, 6, true, 1),
-        izquierda = Animacion.crear("img/Robot_Walk.png", 3, o.ancho, o.alto, 6, true, 2),
-        derecha   = Animacion.crear("img/Robot_Walk.png", 3, o.ancho, o.alto, 6, true, 3)
+    self.animaciones = {
+        abajo     = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 0),
+        arriba    = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 1),
+        izquierda = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 2),
+        derecha   = Animacion.crear(ruta_img, total_frames, self.ancho, self.alto, 6, true, 3)
     }
 
-    o.animacionActual = o.animaciones.abajo
+    self.animacionActual = self.animaciones.abajo
 
-    return o
 end
 
 function Enemigo:PosicionarAleatorio(limites)
@@ -110,5 +107,3 @@ end
 function Enemigo:Dibujar()
     Animacion.dibujar(self.animacionActual, self.x, self.y, self.origen_x, self.origen_y)
 end
-
-return Enemigo
