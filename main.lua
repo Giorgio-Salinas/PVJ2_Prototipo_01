@@ -5,8 +5,15 @@ sonidos = {}
 ventana = {
     ancho  = 160,
     alto   = 144,
-    escala = 4
+    escala = 4,
+    camara_centro_x = 0,
+    camara_centro_y = 0,
+    mapa_ancho = 0,
+    mapa_alto = 0
+
 }
+
+
 
 function redondear(n)
     return math.floor(n + 0.5)
@@ -33,10 +40,12 @@ function verificarColision(a, b)
 end
 
 function love.load()
+    
     math.randomseed(os.time())
     love.window.setMode(ventana.ancho * ventana.escala, ventana.alto * ventana.escala)
     love.graphics.setDefaultFilter("nearest", "nearest")
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
+    
 
     -- Carga de audios globales
     sonidos.ToroYPampa = love.audio.newSource("SFX/ToroYPampa.mp3", "stream")
@@ -73,8 +82,12 @@ function love.update(dt)
 end
 
 function love.draw()
+
+    
+    
     love.graphics.setCanvas(lienzo)
     love.graphics.clear(0.12, 0.12, 0.18)
+   
 
     -- Dibuja el estado activo
     maquinaEstados:dibujar()

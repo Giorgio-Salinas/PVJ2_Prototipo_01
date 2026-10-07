@@ -2,7 +2,7 @@
 
 Enemigo = Class{}
 
-function Enemigo:init(x, y, ruta_img, total_frames, vel)
+function Enemigo:init(x, y, ruta_img, total_frames, vel, mundo)
     
 
     self.x = x
@@ -10,12 +10,16 @@ function Enemigo:init(x, y, ruta_img, total_frames, vel)
     self.inicioX = x
     self.inicioY = y
     self.velocidad = vel
+    self.mundo = mundo
+   
 
     self.ancho = 16
     self.alto = 16
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
     self.radio_colision = 5
+
+     self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agregar al mundo de colisiones
 
     -- Animaciones verticales por columna
     self.animaciones = {
@@ -49,6 +53,7 @@ function Enemigo:PosicionarAleatorio(limites)
         self.x = limites.ancho - self.origen_x
         self.y = limites.alto - self.origen_y
     end
+    
 end
 
 function Enemigo:Reiniciar(limites)
@@ -78,6 +83,11 @@ function Enemigo:Actualizar(dt, target)
             self.x = self.x + (dirX * self.velocidad * dt)
             self.y = self.y + (dirY * self.velocidad * dt)
             seMueve = true
+
+            -- Sincronizar posición con Bump
+    if seMueve and self.mundo then
+        self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
+    end
 
             
             if math.abs(dx) > math.abs(dy) then

@@ -2,7 +2,7 @@
 
 Jugador = Class{}
 
-function Jugador:init(x, y, vel)
+function Jugador:init(x, y, vel, mundo)
     local o = setmetatable({}, Jugador)
 
     self.x = x
@@ -11,13 +11,15 @@ function Jugador:init(x, y, vel)
     self.inicioY = y
     self.velocidad = vel or 60
     self.vidas = 3
+    self.mundo = mundo
+    
 
     self.ancho = 16
     self.alto = 16
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
     self.radio_colision = 5
-
+    self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agregar al mundo de colisiones
     self.direccion_actual = "abajo"
 
     -- Animaciones verticales por cada columna del spritesheet Walk.png
@@ -29,7 +31,7 @@ function Jugador:init(x, y, vel)
     }
 
     self.animacionActual = self.animaciones.abajo
-
+    
     
 end
 
@@ -58,6 +60,10 @@ function Jugador:Actualizar(dt, limites)
         self.direccion_actual = "arriba"
         seMueve = true
     end
+    -- Sincronizar posición con Bump
+    if seMueve and self.mundo then
+        self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
+    end
 
     -- Límites dentro de la ventana
     if limites then
@@ -85,6 +91,11 @@ function Jugador:Reiniciar()
     self.animacionActual = self.animaciones.abajo
     self.animacionActual.activado = false
     self.animacionActual.indice = 1
+
+    -- Sincronizar la caja de Bump con el reinicio:
+    if self.mundo and self.mundo:hasItem(self) then
+        self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
+    end
 end
 
 function Jugador:Dibujar()

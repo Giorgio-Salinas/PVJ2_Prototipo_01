@@ -1,6 +1,11 @@
 EstadoJugar = Class{__includes = Estado}
 
 function EstadoJugar:init()
+    -- Mapa
+    self.mapa = STI("mapa/arena1.lua")
+    self.mundo = Bump.newWorld(16)
+     
+    
     -- Variables de control de la partida
     self.huboColision = false
     self.tiempoPausa = 0
@@ -13,11 +18,13 @@ function EstadoJugar:init()
     self.maxEnemigos = 4
 
     -- Entidades de la partida
-    self.pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60)
+    self.pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60, self.mundo)
+    --Camara
+    self.camara_principal = Camara(self.pj.x, self.pj.y)
     
     self.enemigos = {
-        Robot(20, 20),
-        Bestia(20, 20)
+        Robot(20, 20, self.mundo),
+        Bestia(20, 20, self.mundo)
     }
 
     for _, enemigo in ipairs(self.enemigos) do
@@ -44,6 +51,12 @@ function EstadoJugar:init()
         sonidos.ToroYPampa:stop()
         sonidos.ToroYPampa:play()
     end
+
+    -- Limites de la camara
+    ventana.camara_centro_x = ventana.ancho / 2
+    ventana.camara_centro_y = ventana.alto / 2
+    ventana.mapa_ancho = self.mapa.width * self.mapa.tilewidth
+    ventana.mapa_alto = self.mapa.height * self.mapa.tileheight
 end
 
 function EstadoJugar:invocarEnemigo()
@@ -53,9 +66,9 @@ function EstadoJugar:invocarEnemigo()
 
     local nuevo = nil
     if math.random() < 0.5 then
-        nuevo = Robot(20, 20)
+        nuevo = Robot(20, 20, self.mundo)
     else
-        nuevo = Bestia(20, 20)
+        nuevo = Bestia(20, 20, self.mundo)
     end
 
     nuevo:PosicionarAleatorio(ventana)
@@ -74,7 +87,20 @@ function EstadoJugar:actualizar(dt)
             self:invocarEnemigo()
         end
 
-        self.pj:Actualizar(dt, ventana)
+        self.pj:Actualizar(dt)
+        self.camara_principal:lookAt(self.pj.x, self.pj.y)
+
+        if self.camara_principal.x < ventana.camara_centro_x then
+            self.camara_principal.x = ventana.camara_centro_x
+        elseif self.camara_principal.x > ventana.mapa_ancho - ventana.camara_centro_x then
+            self.camara_principal.x = ventana.mapa_ancho - ventana.camara_centro_x
+        end
+
+        if self.camara_principal.y < ventana.camara_centro_y then
+            self.camara_principal.y = ventana.camara_centro_y
+        elseif self.camara_principal.y > ventana.mapa_alto - ventana.camara_centro_y then
+            self.camara_principal.y = ventana.mapa_alto - ventana.camara_centro_y
+        end
 
         local colisionCon = nil
         for _, enemigo in ipairs(self.enemigos) do
@@ -122,13 +148,27 @@ function EstadoJugar:actualizar(dt)
 end
 
 function EstadoJugar:dibujar()
+
+    self.camara_principal:attach(0, 0, ventana.ancho, ventana.alto)
+
+    if self.mapa.layers["Piso"] then
+    self.mapa:drawLayer(self.mapa.layers["Piso"])
+    end
+
+    self.pj:Dibujar()
+
+    if self.mapa.layers["Deco"] then
+    self.mapa:drawLayer(self.mapa.layers["Deco"])
+    end
+
     if self.huboColision then
         love.graphics.setColor(1, 0.3, 0.3)
     else
         love.graphics.setColor(1, 1, 1)
     end
         
-    self.pj:Dibujar()
+    
+    
 
     for _, enemigo in ipairs(self.enemigos) do
         enemigo:Dibujar()
@@ -138,6 +178,17 @@ function EstadoJugar:dibujar()
         love.graphics.setColor(1, 1, 1)
         Animacion.dibujar(self.ataque, self.pj.x, self.pj.y, 32, 32)
     end
+    
+    -- Dibujar hitboxes de Bump
+    love.graphics.setColor(0, 1, 0)
+    local items = self.mundo:getItems()
+    for _, item in ipairs(items) do
+        local x, y, ancho, alto = self.mundo:getRect(item)
+        love.graphics.rectangle("line", x, y, ancho, alto)
+    end
+    love.graphics.setColor(1, 1, 1)
+
+    self.camara_principal:detach()
 
     love.graphics.setFont(fuentes.pequena)
     love.graphics.setColor(1, 1, 0)
