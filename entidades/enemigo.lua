@@ -11,6 +11,7 @@ function Enemigo:init(x, y, ruta_img, total_frames, vel, mundo)
     self.inicioY = y
     self.velocidad = vel
     self.mundo = mundo
+    self.esEnemigo = true
    
 
     self.ancho = 16
@@ -54,6 +55,9 @@ function Enemigo:PosicionarAleatorio(limites)
         self.y = limites.alto - self.origen_y
     end
     
+    if self.mundo and self.mundo:hasItem(self) then
+        self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
+    end
 end
 
 function Enemigo:Reiniciar(limites)
@@ -62,6 +66,9 @@ function Enemigo:Reiniciar(limites)
     else
         self.x = self.inicioX
         self.y = self.inicioY
+        if self.mundo and self.mundo:hasItem(self) then
+            self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
+        end
     end
     self.animacionActual = self.animaciones.abajo
     self.animacionActual.activado = false

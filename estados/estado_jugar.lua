@@ -102,11 +102,22 @@ function EstadoJugar:actualizar(dt)
             self.camara_principal.y = ventana.mapa_alto - ventana.camara_centro_y
         end
 
-        local colisionCon = nil
+        --cada enemigo camina y actualice su posición
         for _, enemigo in ipairs(self.enemigos) do
             enemigo:Actualizar(dt, self.pj)
-            if verificarColision(self.pj, enemigo) then
-                colisionCon = enemigo
+        end
+
+        --Preguntamos a Bump con queryRect
+        local colisionCon = nil
+        local x, y, w, h = self.mundo:getRect(self.pj)
+        local elementos, cantidad = self.mundo:queryRect(x, y, w, h)
+
+        --Revisamos qué encontró queryRect
+        for i = 1, cantidad do
+            local item = elementos[i]
+            if item ~= self.pj and item.esEnemigo then
+                colisionCon = item
+                break
             end
         end
 
