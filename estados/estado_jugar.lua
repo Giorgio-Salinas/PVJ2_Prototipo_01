@@ -5,6 +5,20 @@ function EstadoJugar:init()
     self.mapa = STI("mapa/arena1.lua")
     self.mundo = Bump.newWorld(16)
      
+    --Pregunta si en el mapa existe la capa llamada "Colisiones"
+    if self.mapa.layers["Colisiones"] then
+        
+        --Recorre con un bucle todos los objetos rectangulares dibujados en esa capa
+        for _, objeto in ipairs(self.mapa.layers["Colisiones"].objects) do
+            
+            --Le pega la etiqueta de que es una pared / obstáculo
+            objeto.esPared = true
+            
+            
+            --Lo registra en la libreta del árbitro Bump
+            self.mundo:add(objeto, objeto.x, objeto.y, objeto.width, objeto.height)
+        end
+    end
     
     -- Variables de control de la partida
     self.huboColision = false
@@ -22,19 +36,18 @@ function EstadoJugar:init()
     --Camara
     self.camara_principal = Camara(self.pj.x, self.pj.y)
     
-    self.enemigos = {
-        Robot(20, 20, self.mundo),
-        Bestia(20, 20, self.mundo)
-    }
+    -- Enemigos posicionados en Tiled
+    self.enemigos = {}
 
-    for _, enemigo in ipairs(self.enemigos) do
-        enemigo:PosicionarAleatorio(ventana)
+    if self.mapa.layers["Generadores"] then
+        for _, objeto in ipairs(self.mapa.layers["Generadores"].objects) do
+            if objeto.name == "Robot" then
+                table.insert(self.enemigos, Robot(objeto.x + objeto.width / 2, objeto.y + objeto.height / 2, self.mundo))
+            elseif objeto.name == "Bestia" then
+                table.insert(self.enemigos, Bestia(objeto.x + objeto.width / 2, objeto.y + objeto.height / 2, self.mundo))
+            end
+        end
     end
-
-    while self.enemigos[1].x == self.enemigos[2].x and self.enemigos[1].y == self.enemigos[2].y do
-        self.enemigos[2]:PosicionarAleatorio(ventana)
-    end
-
     -- Animaciones de ataque
     self.ataques = {
         abajo     = Animacion.crear("img/Hammer.png", 3, 64, 64, 12, true, 0, false),
@@ -107,19 +120,8 @@ function EstadoJugar:actualizar(dt)
             enemigo:Actualizar(dt, self.pj)
         end
 
-        --Preguntamos a Bump con queryRect
-        local colisionCon = nil
-        local x, y, w, h = self.mundo:getRect(self.pj)
-        local elementos, cantidad = self.mundo:queryRect(x, y, w, h)
-
-        --Revisamos qué encontró queryRect
-        for i = 1, cantidad do
-            local item = elementos[i]
-            if item ~= self.pj and item.esEnemigo then
-                colisionCon = item
-                break
-            end
-        end
+        -- Le preguntamos al jugador si chocó contra algún enemigo
+        local colisionCon = self.pj:colision()
 
         if colisionCon then
             if self.ataque and self.ataque.activado then

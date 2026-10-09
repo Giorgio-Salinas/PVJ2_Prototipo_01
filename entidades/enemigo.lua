@@ -19,6 +19,7 @@ function Enemigo:init(x, y, ruta_img, total_frames, vel, mundo)
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
     self.radio_colision = 5
+    self.esEnemigo = true
 
      self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agregar al mundo de colisiones
 
