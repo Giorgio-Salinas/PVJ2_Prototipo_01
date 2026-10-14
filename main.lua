@@ -12,7 +12,7 @@ ventana = {
     mapa_alto = 0
 
 }
-
+depurar = false
 
 
 function redondear(n)
@@ -66,9 +66,21 @@ function love.load()
     })
 
     maquinaEstados:cambiar("titulo")
+    -- asociar eventos
+    love.handlers.modoDebug = modoDebug --Handler para cambiar el modo debug
+    
+end
+
+function modoDebug()
+    depurar = not depurar
 end
 
 function love.keypressed(key)
+
+    if key == "f1" then
+        love.event.push("modoDebug") --Push al handler para cambiar el modo debug
+    end
+
     if key == "escape" then
         love.event.quit()
         return

@@ -11,6 +11,7 @@ function Jugador:init(x, y, vel, mundo)
     self.inicioY = y
     self.velocidad = vel or 60
     self.vidas = 3
+    love.event.push("actualizar_vidas", self.vidas) --Push al handler para actualizar el texto de vidas
     self.mundo = mundo
     
 
@@ -100,6 +101,7 @@ end
 
 function Jugador:RecibirDanio()
     self.vidas = self.vidas - 1
+    love.event.push("actualizar_vidas", self.vidas) --Push al handler para actualizar el texto de vidas
 end
 
 function Jugador:Reiniciar()

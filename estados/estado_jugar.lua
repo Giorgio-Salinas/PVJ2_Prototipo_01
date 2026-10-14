@@ -4,6 +4,7 @@ function EstadoJugar:init()
     -- Mapa
     self.mapa = STI("mapa/arena1.lua")
     self.mundo = Bump.newWorld(16)
+    
      
     --Pregunta si en el mapa existe la capa llamada "Colisiones"
     if self.mapa.layers["Colisiones"] then
@@ -25,12 +26,20 @@ function EstadoJugar:init()
     self.tiempoPausa = 0
     self.derrotados = 0
     self.objetivo = 5
+    self.texto_objetivo = ""
+    love.handlers.actualizar_objetivos = function(derrotados, objetivo)
+        self.texto_objetivo = "Objetivo: " .. derrotados .. "/" .. objetivo
+    end
+    love.event.push("actualizar_objetivos", self.derrotados, self.objetivo)
 
     -- Spawner
     self.timerSpawn = 0
     self.tiempoEntreSpawns = 3.5
     self.maxEnemigos = 4
-
+    self.texto_vidas = ""
+    love.handlers.actualizar_vidas = function(vidas) --Handlers para actualizar el texto de vidas
+        self.texto_vidas = "Vidas: " .. vidas
+    end
     -- Entidades de la partida
     self.pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60, self.mundo)
     --Camara
@@ -126,6 +135,7 @@ function EstadoJugar:actualizar(dt)
         if colisionCon then
             if self.ataque and self.ataque.activado then
                 self.derrotados = self.derrotados + 1
+                love.event.push("actualizar_objetivos", self.derrotados, self.objetivo)
                 colisionCon:Reiniciar(ventana)
                 self.ataque.activado = false
                 self.ataque.indice = 1
@@ -179,9 +189,7 @@ function EstadoJugar:dibujar()
     else
         love.graphics.setColor(1, 1, 1)
     end
-        
-    
-    
+     
 
     for _, enemigo in ipairs(self.enemigos) do
         enemigo:Dibujar()
@@ -193,24 +201,27 @@ function EstadoJugar:dibujar()
     end
     
     -- Dibujar hitboxes de Bump
-    love.graphics.setColor(0, 1, 0)
-    local items = self.mundo:getItems()
-    for _, item in ipairs(items) do
-        local x, y, ancho, alto = self.mundo:getRect(item)
-        love.graphics.rectangle("line", x, y, ancho, alto)
+    if depurar then
+        love.graphics.setColor(0, 1, 0)
+        local items = self.mundo:getItems()
+        for _, item in ipairs(items) do
+            local x, y, ancho, alto = self.mundo:getRect(item)
+            love.graphics.rectangle("line", x, y, ancho, alto)
+        end
     end
     love.graphics.setColor(1, 1, 1)
 
     self.camara_principal:detach()
 
     love.graphics.setFont(fuentes.pequena)
-    love.graphics.setColor(1, 1, 0)
-    love.graphics.print("Vidas: " .. self.pj.vidas, 4, 4)
-    local textoObjetivo = "Objetivo: " .. self.derrotados .. "/" .. self.objetivo
-    love.graphics.printf(textoObjetivo, 0, 4, ventana.ancho - 4, "right")
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.print(self.texto_vidas, 4, 4)
+    love.graphics.printf(self.texto_objetivo, 0, 4, ventana.ancho - 4, "right")
 end
 
+
 function EstadoJugar:keypressed(key)
+    
     if key == "space" and not self.ataque.activado and not self.huboColision then
         local dir = self.pj.direccion_actual or "abajo"
         self.ataque = self.ataques[dir] or self.ataques.abajo
