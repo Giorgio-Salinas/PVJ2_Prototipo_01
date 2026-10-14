@@ -7,8 +7,6 @@ function Jugador:init(x, y, vel, mundo)
 
     self.x = x
     self.y = y
-    --self.inicioX = x
-    --self.inicioY = y
     self.velocidad = vel or 60
     self.vidas = 3
     self.invulnerable = false
@@ -37,7 +35,7 @@ function Jugador:init(x, y, vel, mundo)
     
 end
 
-function Jugador:Actualizar(dt, limites)
+function Jugador:Actualizar(dt)
     local seMueve = false
     local anterior_x = self.x
     local anterior_y = self.y
@@ -107,20 +105,6 @@ function Jugador:RecibirDanio()
     love.event.push("actualizar_vidas", self.vidas) --Push al handler para actualizar el texto de vidas
     end
 end
-
---[[function Jugador:Reiniciar()
-    self.x = self.inicioX
-    self.y = self.inicioY
-    self.direccion_actual = "abajo"
-    self.animacionActual = self.animaciones.abajo
-    self.animacionActual.activado = false
-    self.animacionActual.indice = 1
-
-    -- Sincronizar la caja de Bump con el reinicio:
-    if self.mundo and self.mundo:hasItem(self) then
-        self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
-    end
-end]]--
 
 function Jugador:Dibujar()
     love.graphics.setColor(self.color)

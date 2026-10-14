@@ -25,6 +25,7 @@ require("estados/estado_titulo")
 require("estados/estado_jugar")
 require("estados/estado_derrota")
 require("estados/estado_victoria")
+require("hud")
 
 -- fuente
 fuentes = {

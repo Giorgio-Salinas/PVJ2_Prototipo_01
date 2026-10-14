@@ -19,25 +19,6 @@ function redondear(n)
     return math.floor(n + 0.5)
 end
 
-function verificarColision(a, b)
-    local ra = a.radio_colision or a.origen_x
-    local rb = b.radio_colision or b.origen_x
-
-    local a_izq = a.x - ra
-    local a_der = a.x + ra
-    local a_arr = a.y - ra
-    local a_aba = a.y + ra
-
-    local b_izq = b.x - rb
-    local b_der = b.x + rb
-    local b_arr = b.y - rb
-    local b_aba = b.y + rb
-
-    return a_der > b_izq and
-           a_izq < b_der and
-           a_aba > b_arr and
-           a_arr < b_aba
-end
 
 function love.load()
     
@@ -66,14 +47,10 @@ function love.load()
     })
 
     maquinaEstados:cambiar("titulo")
-    -- asociar eventos
-    love.handlers.modoDebug = modoDebug --Handler para cambiar el modo debug
     
 end
 
-function modoDebug()
-    depurar = not depurar
-end
+
 
 function love.keypressed(key)
 
