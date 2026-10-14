@@ -22,8 +22,6 @@ function EstadoJugar:init()
     end
     
     -- Variables de control de la partida
-    self.huboColision = false
-    self.tiempoPausa = 0
     self.derrotados = 0
     self.objetivo = 5
     self.texto_objetivo = ""
@@ -102,7 +100,7 @@ function EstadoJugar:actualizar(dt)
         Animacion.actualizar(self.ataque, dt)
     end
 
-    if not self.huboColision then
+        -- spawn de enemigos cada cierto tiempo
         self.timerSpawn = self.timerSpawn + dt
         if self.timerSpawn >= self.tiempoEntreSpawns then
             self.timerSpawn = 0
@@ -146,10 +144,9 @@ function EstadoJugar:actualizar(dt)
                     maquinaEstados:cambiar("victoria")
                 end
             else
-                self.huboColision = true
-                self.tiempoPausa = 0.5
+                
                 self.pj:RecibirDanio()
-                if sonidos.Danio then sonidos.Danio:clone():play() end
+              
 
                 if self.pj.vidas <= 0 then
                     if sonidos.ToroYPampa then sonidos.ToroYPampa:stop() end
@@ -158,17 +155,8 @@ function EstadoJugar:actualizar(dt)
                 end
             end
         end
-    else
-        self.tiempoPausa = self.tiempoPausa - dt
-        if self.tiempoPausa <= 0 then
-            self.huboColision = false
-            self.pj:Reiniciar()
-            for _, enemigo in ipairs(self.enemigos) do
-                enemigo:Reiniciar(ventana)
-            end
-        end
-    end
 end
+    
 
 function EstadoJugar:dibujar()
 
@@ -184,11 +172,7 @@ function EstadoJugar:dibujar()
     self.mapa:drawLayer(self.mapa.layers["Deco"])
     end
 
-    if self.huboColision then
-        love.graphics.setColor(1, 0.3, 0.3)
-    else
-        love.graphics.setColor(1, 1, 1)
-    end
+    love.graphics.setColor(1, 1, 1)
      
 
     for _, enemigo in ipairs(self.enemigos) do
@@ -222,7 +206,7 @@ end
 
 function EstadoJugar:keypressed(key)
     
-    if key == "space" and not self.ataque.activado and not self.huboColision then
+    if key == "space" and not self.ataque.activado then
         local dir = self.pj.direccion_actual or "abajo"
         self.ataque = self.ataques[dir] or self.ataques.abajo
         self.ataque.activado = true

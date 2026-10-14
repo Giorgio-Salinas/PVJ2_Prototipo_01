@@ -3,14 +3,16 @@
 Jugador = Class{}
 
 function Jugador:init(x, y, vel, mundo)
-    local o = setmetatable({}, Jugador)
+    
 
     self.x = x
     self.y = y
-    self.inicioX = x
-    self.inicioY = y
+    --self.inicioX = x
+    --self.inicioY = y
     self.velocidad = vel or 60
     self.vidas = 3
+    self.invulnerable = false
+    self.color = {1, 1, 1, 1}
     love.event.push("actualizar_vidas", self.vidas) --Push al handler para actualizar el texto de vidas
     self.mundo = mundo
     
@@ -19,7 +21,6 @@ function Jugador:init(x, y, vel, mundo)
     self.alto = 16
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
-    self.radio_colision = 5
     self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agregar al mundo de colisiones
     self.direccion_actual = "abajo"
 
@@ -84,12 +85,6 @@ function Jugador:Actualizar(dt, limites)
         end
     end
 
-    -- Límites dentro de la ventana
-    if limites then
-        self.x = math.max(self.origen_x, math.min(limites.ancho - self.origen_x, self.x))
-        self.y = math.max(self.origen_y, math.min(limites.alto - self.origen_y, self.y))
-    end
-
     -- Actualización de la animación activa
     self.animacionActual.activado = seMueve
     if seMueve then
@@ -100,11 +95,20 @@ function Jugador:Actualizar(dt, limites)
 end
 
 function Jugador:RecibirDanio()
+    if not self.invulnerable then
+        sonidos.Danio:stop()
+        sonidos.Danio:play()
+    
+    self.invulnerable = true
+    self.color = {1, 0.4, 0.4, 0.7}
+
+    Timer.after(4, function() self.invulnerable = false self.color = {1, 1, 1, 1} end) -- Temporizador para invulnerabilidad de 4 segundos
     self.vidas = self.vidas - 1
     love.event.push("actualizar_vidas", self.vidas) --Push al handler para actualizar el texto de vidas
+    end
 end
 
-function Jugador:Reiniciar()
+--[[function Jugador:Reiniciar()
     self.x = self.inicioX
     self.y = self.inicioY
     self.direccion_actual = "abajo"
@@ -116,10 +120,12 @@ function Jugador:Reiniciar()
     if self.mundo and self.mundo:hasItem(self) then
         self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
     end
-end
+end]]--
 
 function Jugador:Dibujar()
+    love.graphics.setColor(self.color)
     Animacion.dibujar(self.animacionActual, self.x, self.y, self.origen_x, self.origen_y)
+    love.graphics.setColor(1, 1, 1)
 end
 
 

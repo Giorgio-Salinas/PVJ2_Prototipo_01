@@ -90,6 +90,7 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
+    Timer.update(dt)
     maquinaEstados:actualizar(dt)
 end
 
