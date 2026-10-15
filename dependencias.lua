@@ -26,6 +26,7 @@ require("estados/estado_jugar")
 require("estados/estado_derrota")
 require("estados/estado_victoria")
 require("hud")
+require("gestorAudio")
 
 -- fuente
 fuentes = {

@@ -94,8 +94,7 @@ end
 
 function Jugador:RecibirDanio()
     if not self.invulnerable then
-        sonidos.Danio:stop()
-        sonidos.Danio:play()
+        love.event.push("sonido_danio") -- dispara el evcento daño
     
     self.invulnerable = true
     self.color = {1, 0.4, 0.4, 0.7}

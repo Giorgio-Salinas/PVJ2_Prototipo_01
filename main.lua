@@ -1,7 +1,5 @@
 require("dependencias")
 
-sonidos = {}
-
 ventana = {
     ancho  = 160,
     alto   = 144,
@@ -28,15 +26,8 @@ function love.load()
     lienzo = love.graphics.newCanvas(ventana.ancho, ventana.alto)
     
 
-    -- Carga de audios globales
-    sonidos.ToroYPampa = love.audio.newSource("SFX/ToroYPampa.mp3", "stream")
-    sonidos.ToroYPampa:setLooping(true)
-    sonidos.ToroYPampa:setVolume(0.4)
-
-    sonidos.Golpe = love.audio.newSource("SFX/SFX_Golpe.mp3", "static")
-    sonidos.Danio = love.audio.newSource("SFX/SFX_Danio.mp3", "static")
-    sonidos.Ganar = love.audio.newSource("SFX/SFX_Ganar.mp3", "static")
-    sonidos.GameOver = love.audio.newSource("SFX/SFX_GameOver.mp3", "static")
+    --Inicializa el gestor de audio desacoplado
+    gestorAudio = GestorAudio()
 
     -- Inicialización de la Máquina de Estados
     maquinaEstados = MaquinaEstados({

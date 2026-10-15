@@ -60,11 +60,8 @@ function EstadoJugar:init()
     self.ataque = self.ataques.abajo
     self.ataque.activado = false
 
-    -- Música
-    if sonidos.ToroYPampa then
-        sonidos.ToroYPampa:stop()
-        sonidos.ToroYPampa:play()
-    end
+    -- dispara Música por evento
+   love.event.push("reproducir_musica")
 
     -- Limites de la camara
     ventana.camara_centro_x = ventana.ancho / 2
@@ -133,8 +130,7 @@ function EstadoJugar:actualizar(dt)
                 self.ataque.indice = 1
 
                 if self.derrotados >= self.objetivo then
-                    if sonidos.ToroYPampa then sonidos.ToroYPampa:stop() end
-                    if sonidos.Ganar then sonidos.Ganar:play() end
+                    love.event.push("sonido_ganar") -- dispara evento para reproducir el sonido de victoria
                     maquinaEstados:cambiar("victoria")
                 end
             else
@@ -143,8 +139,7 @@ function EstadoJugar:actualizar(dt)
               
 
                 if self.pj.vidas <= 0 then
-                    if sonidos.ToroYPampa then sonidos.ToroYPampa:stop() end
-                    if sonidos.GameOver then sonidos.GameOver:play() end
+                    love.event.push("sonido_perder") -- dispara evento para reproducir el sonido de derrota
                     maquinaEstados:cambiar("derrota")
                 end
             end
@@ -194,8 +189,6 @@ function EstadoJugar:keypressed(key)
         self.ataque = self.ataques[dir] or self.ataques.abajo
         self.ataque.activado = true
         self.ataque.indice = 1
-        if sonidos.Golpe then
-            sonidos.Golpe:clone():play()
-        end
+        love.event.push("sonido_golpe") -- evento para reproducir el sonido de golpe
     end
 end
