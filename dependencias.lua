@@ -2,6 +2,11 @@
 
 --libreria
 Class = require ("lib.class")
+STI = require ("lib.sti")
+Camara = require ("lib.camera")
+Bump = require ("lib.bump")
+Timer = require ("lib.timer")
+Signal = require ("lib.signal")
 
 --modulo auxiliar
 
@@ -21,6 +26,8 @@ require("estados/estado_titulo")
 require("estados/estado_jugar")
 require("estados/estado_derrota")
 require("estados/estado_victoria")
+require("hud")
+require("gestorAudio")
 
 -- fuente
 fuentes = {
