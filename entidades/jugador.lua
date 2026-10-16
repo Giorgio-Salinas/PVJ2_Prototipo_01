@@ -19,7 +19,7 @@ function Jugador:init(x, y, vel, mundo)
     self.alto = 16
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
-    self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agregar al mundo de colisiones
+    self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agrega al mundo de colisiones
     self.direccion_actual = "abajo"
 
     -- Animaciones verticales por cada columna del spritesheet Walk.png
@@ -28,12 +28,30 @@ function Jugador:init(x, y, vel, mundo)
         arriba = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 1),
         izquierda    = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 2),
         derecha   = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 3)
+
     }
 
     self.animacionActual = self.animaciones.abajo
-    
-    
+
+
+    self.animacion_poder =  Animacion.crear("img/Poder.png", 8, 53, 35, 12, false, 0)
+    self.poder_activo = false
+
+    -- Suscripción a señales de habilidad
+    Signal.register("onda_expansiva", function()
+        self.poder_activo = true
+        self.animacion_poder.activado = true
+        self.animacion_poder.indice = 1
+        end)
+
+        Signal.register("fin_onda_expansiva", function()
+        self.poder_activo = false
+        self.animacion_poder.activado = false
+        end)
+
 end
+
+
 
 function Jugador:Actualizar(dt)
     local seMueve = false
@@ -90,6 +108,12 @@ function Jugador:Actualizar(dt)
     else
         self.animacionActual.indice = 1
     end
+
+    -- Actualizar el efecto de poder si está activo
+    if self.poder_activo then
+        Animacion.actualizar(self.animacion_poder, dt)
+    end
+
 end
 
 function Jugador:RecibirDanio()
@@ -109,6 +133,11 @@ function Jugador:Dibujar()
     love.graphics.setColor(self.color)
     Animacion.dibujar(self.animacionActual, self.x, self.y, self.origen_x, self.origen_y)
     love.graphics.setColor(1, 1, 1)
+
+    if self.poder_activo then
+        Animacion.dibujar(self.animacion_poder, self.x, self.y, 26.5, 17.5)
+
+    end
 end
 
 

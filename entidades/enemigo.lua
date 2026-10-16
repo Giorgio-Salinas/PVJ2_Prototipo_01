@@ -3,7 +3,6 @@
 Enemigo = Class{}
 
 function Enemigo:init(x, y, ruta_img, total_frames, vel, mundo)
-    
 
     self.x = x
     self.y = y
@@ -12,6 +11,10 @@ function Enemigo:init(x, y, ruta_img, total_frames, vel, mundo)
     self.velocidad = vel
     self.mundo = mundo
     self.esEnemigo = true
+    self.congelado = false
+    -- Suscripción a eventos globales de jugabilidad para control de estado
+    Signal.register("onda_expansiva", function() self.congelado = true end)
+    Signal.register("fin_onda_expansiva", function() self.congelado = false end)
    
 
     self.ancho = 16
@@ -19,7 +22,6 @@ function Enemigo:init(x, y, ruta_img, total_frames, vel, mundo)
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
     self.radio_colision = 5
-    self.esEnemigo = true
 
      self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agregar al mundo de colisiones
 
@@ -77,6 +79,9 @@ function Enemigo:Reiniciar(limites)
 end
 
 function Enemigo:Actualizar(dt, target)
+    if self.congelado then
+        return
+    end
     local seMueve = false
 
     if target then
@@ -122,6 +127,16 @@ function Enemigo:Actualizar(dt, target)
     end
 end
 
+
+
 function Enemigo:Dibujar()
+    if self.congelado then
+        love.graphics.setColor(0, 0.6, 1, 0.8)
+
+    else
+        love.graphics.setColor(1, 1, 1, 1) -- Restaurar color a blanco
+    end
+
     Animacion.dibujar(self.animacionActual, self.x, self.y, self.origen_x, self.origen_y)
+    
 end

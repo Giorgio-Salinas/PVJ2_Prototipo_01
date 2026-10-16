@@ -191,4 +191,11 @@ function EstadoJugar:keypressed(key)
         self.ataque.indice = 1
         love.event.push("sonido_golpe") -- evento para reproducir el sonido de golpe
     end
+    if key == "x" then
+        
+        Signal.emit("onda_expansiva")-- Emisión de evento 1 a N: notifica el inicio de la habilidad a todos los suscriptores
+        love.event.push("sonido_ondaExpansiva") -- evento para reproducir el sonido de onda expansiva
+        Timer.after(5, function() Signal.emit("fin_onda_expansiva") end)
+    end
+
 end

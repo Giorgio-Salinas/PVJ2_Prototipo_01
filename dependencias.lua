@@ -6,6 +6,7 @@ STI = require ("lib.sti")
 Camara = require ("lib.camera")
 Bump = require ("lib.bump")
 Timer = require ("lib.timer")
+Signal = require ("lib.signal")
 
 --modulo auxiliar
 
