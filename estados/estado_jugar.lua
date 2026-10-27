@@ -1,5 +1,16 @@
+-- Función auxiliar para que la corrutina espere una cantidad de segundos antes de continuar
+local function wait(segundos)
+    local tiempo_transcurrido = 0
+    while tiempo_transcurrido < segundos do
+        local dt = coroutine.yield()
+        tiempo_transcurrido = tiempo_transcurrido + (dt or 0)
+    end
+end
+
+
 EstadoJugar = Class{__includes = Estado}
 
+-- INIT
 function EstadoJugar:init()
     -- Mapa
     self.mapa = STI("mapa/arena1.lua")
@@ -25,12 +36,52 @@ function EstadoJugar:init()
     -- Variables de control de la partida
     self.derrotados = 0
     self.objetivo = 5
+    self.maxEnemigos = 4
     love.event.push("actualizar_objetivos", self.derrotados, self.objetivo)
 
     -- Spawner
-    self.timerSpawn = 0
-    self.tiempoEntreSpawns = 3.5
-    self.maxEnemigos = 4
+    -- Variables para avisos de la secuencia en pantalla
+    self.textoAlerta = ""
+    self.mostrarAlerta = false
+
+    -- ==========================================================
+    -- CORRUTINA: Secuencia de Oleadas y Jefe Final
+    -- ==========================================================
+    self.rutinaPartida = coroutine.create(function()
+        -- 1. Cartel inicial
+        self.textoAlerta = "¡SOBREVIVE A LA OLEADA!"
+        self.mostrarAlerta = true
+        wait(2.0)
+        self.mostrarAlerta = false
+
+        -- Spawnea enemigos hasta llegar a los 5 derrotados
+        while self.derrotados < self.objetivo do
+            self:invocarEnemigo()
+            wait(2.5) -- Espera gestionada por la corrutina
+        end
+
+        -- Alerta del Jefe
+        self.textoAlerta = "¡ALERTA: EL JEFE!"
+        self.mostrarAlerta = true
+        wait(3.0)
+        self.mostrarAlerta = false
+
+        -- Invocamos al Jefe
+        local nuevoJefe = Jefe(ventana.ancho / 2, 40, self.mundo)
+        table.insert(self.enemigos, nuevoJefe)
+
+        -- 5. La corrutina espera a que el Jefe se quede sin vidas
+        while nuevoJefe.vidas > 0 do
+            wait(0.2)
+        end
+
+        -- Victoria al derrotar al Jefe
+        self.textoAlerta = "¡JEFE DERROTADO!"
+        self.mostrarAlerta = true
+        love.event.push("sonido_ganar")
+        wait(2.0)
+        maquinaEstados:cambiar("victoria")
+    end)
    
     -- Entidades de la partida
     self.pj = Jugador(ventana.ancho / 2, ventana.alto / 2, 60, self.mundo)
@@ -70,6 +121,7 @@ function EstadoJugar:init()
     ventana.mapa_alto = self.mapa.height * self.mapa.tileheight
 end
 
+-- iNVOCAR ENEMIGO
 function EstadoJugar:invocarEnemigo()
     if #self.enemigos >= self.maxEnemigos then
         return
@@ -86,17 +138,26 @@ function EstadoJugar:invocarEnemigo()
     table.insert(self.enemigos, nuevo)
 end
 
+-- ACTUALIZAR
 function EstadoJugar:actualizar(dt)
-    if self.ataque and self.ataque.activado then
-        Animacion.actualizar(self.ataque, dt)
+   
+
+        -- Reanudar la corrutina pasándole dt
+    if self.rutinaPartida and coroutine.status(self.rutinaPartida) ~= "dead" then
+        local exito, err = coroutine.resume(self.rutinaPartida, dt)
+        if not exito then
+            print("Error en corrutina de partida: " .. tostring(err))
+        end
     end
 
-        -- spawn de enemigos cada cierto tiempo
-        self.timerSpawn = self.timerSpawn + dt
-        if self.timerSpawn >= self.tiempoEntreSpawns then
-            self.timerSpawn = 0
-            self:invocarEnemigo()
-        end
+    --pausa la actualización si se está mostrando el cartel de alerta
+    if self.mostrarAlerta then
+        return
+    end
+    -- animacion del ataque si está activada
+     if self.ataque and self.ataque.activado then
+        Animacion.actualizar(self.ataque, dt)
+    end
 
         self.pj:Actualizar(dt)
         self.camara_principal:lookAt(self.pj.x, self.pj.y)
@@ -122,18 +183,34 @@ function EstadoJugar:actualizar(dt)
         local colisionCon = self.pj:colision()
 
         if colisionCon then
-            if self.ataque and self.ataque.activado then
+        if self.ataque and self.ataque.activado then
+            self.ataque.activado = false
+            self.ataque.indice = 1
+
+            if colisionCon.esJefe then
+                -- Golpe al Jefe: le descontamos 1 vida
+                colisionCon.vidas = colisionCon.vidas - 1
+                love.event.push("sonido_golpe")
+
+                if colisionCon.vidas <= 0 then
+                    -- Al morir, lo quitamos de Bump y de la lista de enemigos
+                    if self.mundo:hasItem(colisionCon) then
+                        self.mundo:remove(colisionCon)
+                    end
+                    for i, e in ipairs(self.enemigos) do
+                        if e == colisionCon then
+                            table.remove(self.enemigos, i)
+                            break
+                        end
+                    end
+                end
+            else
+                -- Golpe a enemigo común: suma punto y reaparece
                 self.derrotados = self.derrotados + 1
                 love.event.push("actualizar_objetivos", self.derrotados, self.objetivo)
                 colisionCon:Reiniciar(ventana)
-                self.ataque.activado = false
-                self.ataque.indice = 1
-
-                if self.derrotados >= self.objetivo then
-                    love.event.push("sonido_ganar") -- dispara evento para reproducir el sonido de victoria
-                    maquinaEstados:cambiar("victoria")
-                end
-            else
+            end
+        else
                 
                 self.pj:RecibirDanio()
               
@@ -179,10 +256,22 @@ function EstadoJugar:dibujar()
 
     self.hud:dibujar()
 
+    -- Cartel de alerta gestionado por la corrutina
+    if self.mostrarAlerta then
+        love.graphics.setColor(0, 0, 0, 0.6)
+        love.graphics.rectangle("fill", 0, ventana.alto / 2 - 20, ventana.ancho, 35)
+        love.graphics.setColor(1, 1, 0, 1)
+        love.graphics.printf(self.textoAlerta, 0, ventana.alto / 2 - 10, ventana.ancho, "center")
+        love.graphics.setColor(1, 1, 1, 1)
+    end
 end
 
 
+
 function EstadoJugar:keypressed(key)
+    if self.mostrarAlerta then
+        return
+    end
     
     if key == "space" and not self.ataque.activado then
         local dir = self.pj.direccion_actual or "abajo"
