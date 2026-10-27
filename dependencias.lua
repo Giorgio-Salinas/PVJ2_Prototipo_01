@@ -18,6 +18,7 @@ require("entidades.jugador")
 require("entidades.enemigo")
 require("entidades.robot")
 require("entidades.bestia")
+require("entidades.jefe")
 
 -- Maquina de estados y estados
 require("estados/estado")

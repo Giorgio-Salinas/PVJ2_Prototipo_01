@@ -19,15 +19,30 @@ function Jugador:init(x, y, vel, mundo)
     self.alto = 16
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
-    self.mundo:add(self, self.x - self.origen_x, self.y - self.origen_y, self.ancho, self.alto) -- Agrega al mundo de colisiones
+
+    -- Hitbox reducida para no recibir daño injusto (10x10)
+    self.anchoColision = 8
+    self.altoColision = 8
+    self.origen_colision_x = self.anchoColision / 2
+    self.origen_colision_y = self.altoColision / 2
+
+    -- Registra la caja de 10x10 bien centrada en Bump
+    self.mundo:add(
+        self, 
+        self.x - self.origen_colision_x, 
+        self.y - self.origen_colision_y, 
+        self.anchoColision, 
+        self.altoColision
+    ) 
+    -- Agrega al mundo de colisiones
     self.direccion_actual = "abajo"
 
     -- Animaciones verticales por cada columna del spritesheet Walk.png
     self.animaciones = {
-        abajo     = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 0),
+        abajo  = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 0),
         arriba = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 1),
-        izquierda    = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 2),
-        derecha   = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 3)
+        izquierda = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 2),
+        derecha = Animacion.crear("img/Walk.png", 3, self.ancho, self.alto, 8, true, 3)
 
     }
 
@@ -82,7 +97,7 @@ function Jugador:Actualizar(dt)
     end
     -- Sincronizar posición con Bump
     if seMueve and self.mundo then
-        self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
+        self.mundo:update(self, self.x - self.origen_colision_x, self.y - self.origen_colision_y)
     
 
     --consulta si toca una pared
@@ -95,7 +110,7 @@ function Jugador:Actualizar(dt)
                 self.x = anterior_x
                 self.y = anterior_y
             
-                self.mundo:update(self, self.x - self.origen_x, self.y - self.origen_y)
+                self.mundo:update(self, self.x - self.origen_colision_x, self.y - self.origen_colision_y)
                 break
             end
         end
